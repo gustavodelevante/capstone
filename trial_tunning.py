@@ -12,10 +12,9 @@ tf.get_logger().setLevel('ERROR')
 
 # Set environment variable to reduce TensorFlow log verbosity
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suppresses INFO, WARNING, and ERROR messages
 
 # Load images and handle errors
-def load_dataset_with_error_handling(path, batch_size=32, seed=123, validation_split=0.2, subset='both'):
+def load_dataset_with_error_handling(path, batch_size=64, seed=123, validation_split=0.2, subset='both'):
     train_ds, test_ds = tf.keras.utils.image_dataset_from_directory(
         path,
         image_size=(224, 224),
@@ -44,30 +43,61 @@ def build_model(hp):
             tf.keras.layers.RandomRotation(0.2),
         ], name='augmentation'),
         tf.keras.layers.Conv2D(
-            hp.Int('conv_1_units', min_value=64, max_value=256, step=64), 
-            (3, 3), 
-            activation='relu'),
+            hp.Int('conv_1_units', min_value=128, max_value=256, step=64),
+            (3, 3),
+            activation='relu'
+        ),
         tf.keras.layers.BatchNormalization(),
         tf.keras.layers.MaxPool2D((2, 2)),
         tf.keras.layers.Conv2D(
-            hp.Int('conv_2_units', min_value=64, max_value=256, step=64), 
-            (3, 3), 
-            activation='relu'),
+            hp.Int('conv_2_units', min_value=128, max_value=256, step=64),
+            (3, 3),
+            activation='relu'
+        ),
         tf.keras.layers.BatchNormalization(),
         tf.keras.layers.MaxPool2D((2, 2)),
-        tf.keras.layers.Dropout(hp.Float('dropout_1', min_value=0.2, max_value=0.5, step=0.1)),
+        tf.keras.layers.Dropout(
+            hp.Float('dropout_1', min_value=0.2, max_value=0.6, step=0.1)
+        ),
         tf.keras.layers.Conv2D(
-            hp.Int('conv_3_units', min_value=128, max_value=512, step=128), 
-            (3, 3), 
-            activation='relu'),
+            hp.Int('conv_3_units', min_value=256, max_value=512, step=128),
+            (3, 3),
+            activation='relu'
+        ),
         tf.keras.layers.BatchNormalization(),
         tf.keras.layers.MaxPool2D((2, 2)),
-        tf.keras.layers.Dropout(hp.Float('dropout_2', min_value=0.2, max_value=0.5, step=0.1)),
+        tf.keras.layers.Dropout(
+            hp.Float('dropout_2', min_value=0.2, max_value=0.6, step=0.1)
+        ),
+        tf.keras.layers.Conv2D(
+            hp.Int('conv_4_units', min_value=256, max_value=512, step=128),
+            (3, 3),
+            activation='relu'
+        ),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.MaxPool2D((2, 2)),
+        tf.keras.layers.Dropout(
+            hp.Float('dropout_3', min_value=0.2, max_value=0.6, step=0.1)
+        ),
+        tf.keras.layers.Conv2D(
+            hp.Int('conv_5_units', min_value=128, max_value=256, step=64),
+            (3, 3),
+            activation='relu'
+        ),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.MaxPool2D((2, 2)),
+        tf.keras.layers.Dropout(
+            hp.Float('dropout_4', min_value=0.2, max_value=0.6, step=0.1)
+        ),
         tf.keras.layers.Flatten(),
         tf.keras.layers.Dense(
-            hp.Int('dense_units', min_value=64, max_value=256, step=64), 
-            activation='relu'),
-        tf.keras.layers.Dropout(hp.Float('dropout_3', min_value=0.2, max_value=0.5, step=0.1)),
+            hp.Int('dense_1_units', min_value=128, max_value=256, step=64),
+            activation='relu'
+        ),
+        tf.keras.layers.Dense(
+            hp.Int('dense_2_units', min_value=64, max_value=128, step=64),
+            activation='relu'
+        ),
         tf.keras.layers.Dense(36, activation='softmax')
     ])
 
@@ -91,7 +121,7 @@ tuner = kt.Hyperband(
 )
 
 # Early stopping callback
-stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
+stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=30, restore_best_weights=True)
 
 # Load dataset
 path = r"C:\Users\gustavo\Desktop\Capstone\Crops Data\Cashew_only_inval - Copy"
