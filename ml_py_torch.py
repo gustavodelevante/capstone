@@ -68,7 +68,7 @@ class CustomModel(nn.Module):
             nn.ReLU(),
             nn.Linear(128, 64),
             nn.ReLU(),
-            nn.Linear(64, 36)  # Adjust output size as needed
+            nn.Linear(64, 36)  
         )
     
     def forward(self, x):
